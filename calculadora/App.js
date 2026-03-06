@@ -1,14 +1,5 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  KeyboardAvoidingView, 
-  Platform, 
-  TouchableWithoutFeedback, 
-  Keyboard 
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 
 export default function App() {
   const [idade, setIdade] = useState('');
@@ -16,11 +7,36 @@ export default function App() {
   const [mes, setMes] = useState('');
   const [anoNascimento, setAnoNascimento] = useState(null);
 
+  // Observa as mudanças nos inputs e calcula automaticamente
+  useEffect(() => {
+    calcularAno();
+  }, [idade, dia, mes]);
+
+  const calcularAno = () => {
+    const i = parseInt(idade);
+    const d = parseInt(dia);
+    const m = parseInt(mes);
+
+    if (!isNaN(i) && !isNaN(d) && !isNaN(m)) {
+      const dataAtual = new Date();
+      const anoAtual = dataAtual.getFullYear();
+      const mesAtual = dataAtual.getMonth() + 1; 
+      const diaAtual = dataAtual.getDate();
+
+      let anoCalculado = anoAtual - i;
+
+      if (m > mesAtual || (m === mesAtual && d > diaAtual)) {
+        anoCalculado -= 1;
+      }
+
+      setAnoNascimento(anoCalculado);
+    } else {
+      setAnoNascimento(null);
+    }
+  };
+
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
           <Text style={styles.header}>Calculadora de Nascimento</Text>
@@ -35,6 +51,13 @@ export default function App() {
             <Text style={styles.label}>Mês de Nascimento</Text>
             <TextInput style={styles.input} placeholder="Ex: 10" keyboardType="numeric" value={mes} onChangeText={setMes} maxLength={2} />
           </View>
+
+          {anoNascimento && (
+            <View style={styles.resultContainer}>
+              <Text style={styles.resultLabel}>Você nasceu no ano de:</Text>
+              <Text style={styles.resultValue}>{anoNascimento}</Text>
+            </View>
+          )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -48,4 +71,7 @@ const styles = StyleSheet.create({
   inputGroup: { marginBottom: 20 },
   label: { fontSize: 16, marginBottom: 8, color: '#555', fontWeight: '600' },
   input: { backgroundColor: '#fff', paddingHorizontal: 15, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: '#ddd', marginBottom: 20, fontSize: 18 },
+  resultContainer: { marginTop: 20, alignItems: 'center', backgroundColor: '#e3f2fd', padding: 20, borderRadius: 12, borderWidth: 1, borderColor: '#bbdefb' },
+  resultLabel: { fontSize: 18, color: '#1565c0', marginBottom: 8 },
+  resultValue: { fontSize: 48, fontWeight: 'bold', color: '#1565c0' },
 });
